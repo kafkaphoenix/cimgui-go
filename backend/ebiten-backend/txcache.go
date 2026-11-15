@@ -121,6 +121,7 @@ func (c *textureCache) ForEachGame(f func(id imgui.TextureID, game ebiten.Game, 
 
 func (c *textureCache) RemoveTexture(id imgui.TextureID) {
 	delete(c.cache, id)
+	delete(c.cacheGame, id)
 }
 
 func NewCache() TextureCache {
