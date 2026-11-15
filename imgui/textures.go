@@ -23,3 +23,19 @@ func (self *DrawData) AppendTextures(dst []TextureData) []TextureData {
 	}
 	return dst
 }
+
+// PixelBytes returns the texture's pixels in ImGui's memory, row after row,
+// BytesPerPixel bytes a pixel, or nil when it has none. Unlike Pixels, it
+// needs no conversion from uintptr, which go vet reports as a possible misuse
+// of unsafe.Pointer. The bytes stay valid while ImGui keeps the pixels, until
+// the texture is destroyed or created again.
+func (self *TextureData) PixelBytes() []byte {
+	selfArg, selfFin := self.Handle()
+	defer selfFin()
+
+	if selfArg.Pixels == nil {
+		return nil
+	}
+	n := int(selfArg.Width) * int(selfArg.Height) * int(selfArg.BytesPerPixel)
+	return unsafe.Slice((*byte)(unsafe.Pointer(selfArg.Pixels)), n)
+}
