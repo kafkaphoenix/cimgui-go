@@ -3,7 +3,6 @@ package ebitenbackend
 import (
 	"image"
 	"log"
-	"unsafe"
 
 	"github.com/AllenDang/cimgui-go/imgui"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -73,7 +72,7 @@ func (c *textureCache) writePixels(img *ebiten.Image, tex imgui.TextureData, rec
 		return
 	}
 	stride := int(tex.Width()) * 4
-	src := unsafe.Slice((*byte)(unsafe.Pointer(tex.Pixels())), stride*int(tex.Height()))
+	src := tex.PixelBytes()
 	n := rect.Dx() * rect.Dy() * 4
 	if cap(c.pix) < n {
 		c.pix = make([]byte, n)
