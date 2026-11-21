@@ -6,6 +6,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+// keys maps ImGui's keys to Ebitengine's, made once: sendInput reads it
+// every frame.
+var keys = keyMap()
+
 func keyMap() map[imgui.Key]int {
 	return map[imgui.Key]int{
 		imgui.KeyTab:          int(ebiten.KeyTab),
@@ -151,7 +155,7 @@ func sendInput(io *imgui.IO, inputChars []rune) []rune {
 		io.AddInputCharactersUTF8(string(inputChars))
 		inputChars = inputChars[:0]
 	}
-	for ik, iv := range keyMap() {
+	for ik, iv := range keys {
 		if inpututil.IsKeyJustPressed(ebiten.Key(iv)) {
 			io.AddKeyEvent(ik, true)
 		}
