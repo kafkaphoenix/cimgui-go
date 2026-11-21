@@ -66,6 +66,23 @@ func (c *textureCache) UpdateTexture(tex imgui.TextureData) {
 	}
 }
 
+// pixelBytes returns tex's pixels in ImGui's memory, row after row,
+// BytesPerPixel bytes a pixel, or nil when it has none. Read through the
+// texture's handle, it needs no conversion of Pixels' uintptr back to
+// unsafe.Pointer, which go vet reports as a possible misuse. The bytes stay
+// valid while ImGui keeps the pixels, until the texture is destroyed or
+// created again.
+func pixelBytes(tex imgui.TextureData) []byte {
+	data, fin := tex.Handle()
+	defer fin()
+
+	if data.Pixels == nil {
+		return nil
+	}
+	n := int(data.Width) * int(data.Height) * int(data.BytesPerPixel)
+	return unsafe.Slice((*byte)(unsafe.Pointer(data.Pixels)), n)
+}
+
 // writePixels writes rect of tex's pixels into img: ImGui keeps them in
 // straight alpha, and Ebitengine wants them premultiplied.
 func (c *textureCache) writePixels(img *ebiten.Image, tex imgui.TextureData, rect image.Rectangle) {
@@ -73,7 +90,7 @@ func (c *textureCache) writePixels(img *ebiten.Image, tex imgui.TextureData, rec
 		return
 	}
 	stride := int(tex.Width()) * 4
-	src := unsafe.Slice((*byte)(unsafe.Pointer(tex.Pixels())), stride*int(tex.Height()))
+	src := pixelBytes(tex)
 	n := rect.Dx() * rect.Dy() * 4
 	if cap(c.pix) < n {
 		c.pix = make([]byte, n)
